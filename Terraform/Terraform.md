@@ -92,6 +92,25 @@ resource "aws_instance" "example" {
   instance_type = "t2.micro"
 }
 ```
+- **Declare Variables in `variables.tf`:**
+    
+    ```hcl
+    
+    variable "instance_type" {
+      description = "Type of EC2 instance"
+      type        = string
+      default     = "t2.micro"
+    }
+    
+    ```
+    
+- **Assign Values in `terraform.tfvars`:**
+    
+    ```hcl
+    
+    instance_type = "t3.large"
+    
+    ```
 
 ---
 
