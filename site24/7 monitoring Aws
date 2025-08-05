@@ -1,0 +1,111 @@
+Below is a concise, step-by-step guide to monitor seven AWS accounts using Site24x7 with role-based access, leveraging cross-account IAM roles for secure, 24/7 monitoring. This guide assumes you have administrative access to all seven AWS accounts and a Site24x7 account.
+
+---
+
+### **Step-by-Step Guide to Monitor 7 AWS Accounts with Site24x7 Using Role-Based Access**
+
+#### **Step 1: Prepare for Integration**
+1. **Log in to Site24x7**:
+   - Access your Site24x7 account at [https://www.site24x7.com/](https://www.site24x7.com/).
+   - Navigate to **AWS > Integrate AWS Account** to view integration options.
+2. **Obtain Site24x7’s AWS Account ID**:
+   - In the Site24x7 console, under **AWS > Integrate AWS Account > Register with IAM Role**, note the **Site24x7 AWS Account ID** and generate an **External ID** (optional but recommended for security).
+3. **Plan Services to Monitor**:
+   - Identify which AWS services (e.g., EC2, RDS, S3, DynamoDB) you want to monitor across the seven accounts.
+
+#### **Step 2: Create a Cross-Account IAM Role in Each AWS Account**
+For each of the seven AWS accounts, create an IAM role to allow Site24x7 read-only access.
+
+1. **Log in to AWS Management Console**:
+   - Access one of your AWS accounts.
+2. **Navigate to IAM**:
+   - Go to **IAM > Roles > Create Role**.
+3. **Configure Trusted Entity**:
+   - Select **AWS account** as the trusted entity type.
+   - Choose **Another AWS account** and enter Site24x7’s AWS Account ID (from Step 1).
+   - Check **Require external ID** and enter the External ID from Site24x7 (if using).
+4. **Add Permissions**:
+   - Search for and attach the AWS-managed policy **ReadOnlyAccess** to grant Site24x7 read-only access to AWS resources.
+   - If monitoring Kinesis Video Streams, also attach **AmazonKinesisVideoStreamsReadOnlyAccess**.
+5. **Name the Role**:
+   - Name the role (e.g., `Site24x7MonitoringRole`) and add a description.
+   - Review and create the role.
+6. **Copy the Role ARN**:
+   - After creation, note the **Role ARN** (e.g., `arn:aws:iam::<account-id>:role/Site24x7MonitoringRole`).
+7. **Repeat for All Accounts**:
+   - Log in to each of the seven AWS accounts and repeat steps 2–6 to create a unique IAM role for each.
+
+**Optional Automation with CloudFormation**:
+- In Site24x7, go to **AWS > Integrate AWS Account > Register with IAM Role** and download the CloudFormation template.
+- In each AWS account, go to **CloudFormation > Stacks > Create Stack**, upload the template, and deploy it to create the IAM role automatically.
+
+#### **Step 3: Integrate AWS Accounts with Site24x7**
+1. **Return to Site24x7 Console**:
+   - Navigate to **AWS > Integrate AWS Account**.
+2. **Select Account Type**:
+   - Choose the appropriate AWS account type (Global, GovCloud US, or China) for each account.
+3. **Add IAM Role**:
+   - Select **Register with IAM Role** as the authentication method.
+   - Enter the **Role ARN** for the first AWS account.
+   - If using an External ID, input it here.
+4. **Configure Monitoring Settings**:
+   - Select AWS services to monitor (e.g., EC2, RDS, S3).
+   - Set **Polling Intervals** (e.g., 5 minutes for Amazon services regions, 1–6 hours for others).
+   - Enable **Guidance Report** for best practice recommendations.
+   - Use **AWS Tags** (e.g., `environment=production`) to create monitor groups automatically.
+5. **Save and Add More Accounts**:
+   - Save the configuration for the first account.
+   - Repeat steps 3–5 for the remaining six accounts, entering each Role ARN.
+
+#### **Step 4: Optional Centralized Management with AWS IAM Identity Center**
+If your seven AWS accounts are part of an AWS Organization, use IAM Identity Center to simplify role creation:
+1. **Enable IAM Identity Center**:
+   - In your AWS Organization’s management account, enable IAM Identity Center.
+2. **Integrate with Site24x7**:
+   - In Site24x7, go to **AWS > Integrate AWS Account > IAM Identity Center**.
+   - Select **Integrate All Accounts** to automatically fetch all accounts, or choose specific ones.
+3. **Automate Role Creation**:
+   - Site24x7 will create IAM roles with **ReadOnlyAccess** or a custom Site24x7 policy across all accounts.
+   - Check the **Failed Accounts** section in Site24x7 if any integrations fail, and verify permissions.
+
+#### **Step 5: Set Up Monitoring and Alerts**
+1. **Access the Inventory Dashboard**:
+   - In Site24x7, go to **AWS > Inventory Dashboard** to view resources and health across all seven accounts.
+2. **Configure Alerts**:
+   - Set up **Notification Profiles** under **Admin > Notification Profiles** to receive alerts via email, SMS, or other channels for performance issues or outages.
+   - Define **Threshold Profiles** to customize alert triggers (e.g., CPU usage > 80%).
+3. **Enable Topology View**:
+   - Use **AWS Topology View** to visualize resource dependencies across accounts.
+4. **Automate Actions**:
+   - Configure automation (e.g., reboot EC2 instances) under **AWS > Actions** for issue remediation.
+5. **Schedule Rediscovery**:
+   - Set rediscovery intervals (e.g., every 5 minutes) to detect new or terminated resources.
+
+#### **Step 6: Monitor Costs (Optional)**
+- In Site24x7, go to **CloudSpend** and integrate AWS Cost Explorer to track costs across all seven accounts.
+- Set budgets and alerts for cost anomalies.
+
+#### **Step 7: Best Practices and Maintenance**
+- **Least Privilege**: Ensure IAM roles only have **ReadOnlyAccess** or Site24x7’s custom policy.
+- **Audit Role Usage**: Use AWS CloudTrail to monitor API calls made by Site24x7’s roles.
+- **Tag Resources**: Apply AWS tags (e.g., `role=webserver`) for organized monitoring in Site24x7.
+- **Clean Up**: If an account is no longer monitored, delete its IAM role in AWS and remove it from Site24x7.
+- **Secure External ID**: Keep the External ID confidential to prevent unauthorized access.
+
+#### **Step 8: Troubleshoot Issues**
+- **Integration Fails**:
+  - Verify the Role ARN, External ID, and trust policy in the IAM role.
+  - Ensure Site24x7’s AWS Account ID is correct.
+- **Resources Not Discovered**:
+  - Check **Discovery Options** in Site24x7 to confirm selected services.
+- **Permission Errors**:
+  - Ensure the IAM role has **ReadOnlyAccess** or the required permissions for monitored services.
+
+---
+
+### **Key Notes**
+- **Supported Services**: Site24x7 monitors over 60 AWS services, but some (e.g., CloudFront) may not be available in GovCloud or China regions.
+- **Scalability**: The setup scales efficiently for seven accounts, especially with IAM Identity Center or CloudFormation.
+- **Security**: Role-based access with temporary credentials is more secure than key-based access.
+
+By following this guide, you’ll have all seven AWS accounts monitored 24/7 in Site24x7 with secure role-based access. If you need help with specific steps or troubleshooting, let me know!
